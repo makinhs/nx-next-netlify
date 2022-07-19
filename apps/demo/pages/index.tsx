@@ -1,11 +1,44 @@
 import styled from 'styled-components';
+import { getStoryblokApi } from "@storyblok/react"
 
 const StyledPage = styled.div`
   .page {
   }
 `;
 
-export function Index() {
+export async function getStaticProps() {
+  // home is the default slug for the homepage in Storyblok
+  const slug = "Foo";
+
+  // load the draft version
+  const sbParams = {
+    version: "draft", // or 'published'
+  };
+
+  const storyblokApi = getStoryblokApi();
+  try{
+    const { data } = await storyblokApi.get(`cdn/stories/${slug}`, sbParams);
+    return {
+      props: {
+        story: data ? data.story : false,
+        key: data ? data.story.id : false,
+      },
+      revalidate: 3600, // revalidate every hour
+    };
+  }catch(err){
+    console.log(err);
+    return {
+      props: {
+        story: false,
+        key: false
+      },
+      revalidate: 3600, // revalidate every hour
+    }
+  }
+}
+
+export function Index(props) {
+  const story = props.story
   /*
    * Replace the elements below with your own.
    *
@@ -17,8 +50,7 @@ export function Index() {
         <div className="container">
           <div id="welcome">
             <h1>
-              <span> Hello there, </span>
-              Welcome netlify ... 3
+              { story ? story.name : 'My Site' }
             </h1>
           </div>
 
