@@ -1,11 +1,44 @@
 import styled from 'styled-components';
+import { getStoryblokApi } from "@storyblok/react"
 
 const StyledPage = styled.div`
   .page {
   }
 `;
 
-export function Index() {
+export async function getStaticProps() {
+  // home is the default slug for the homepage in Storyblok
+  const slug = "Foo";
+
+  // load the draft version
+  const sbParams = {
+    version: "draft", // or 'published'
+  };
+
+  const storyblokApi = getStoryblokApi();
+  try{
+    const { data } = await storyblokApi.get(`cdn/stories/${slug}`, sbParams);
+    return {
+      props: {
+        story: data ? data.story : false,
+        key: data ? data.story.id : false,
+      },
+      revalidate: 3600, // revalidate every hour
+    };
+  }catch(err){
+    console.log(err);
+    return {
+      props: {
+        story: false,
+        key: false
+      },
+      revalidate: 3600, // revalidate every hour
+    }
+  }
+}
+
+export function Index(props) {
+  const story = props.story
   /*
    * Replace the elements below with your own.
    *
@@ -17,8 +50,7 @@ export function Index() {
         <div className="container">
           <div id="welcome">
             <h1>
-              <span> Hello there, </span>
-              Welcome netlify ... 2
+              { story ? story.name : 'My Site' }
             </h1>
           </div>
 
@@ -38,7 +70,7 @@ export function Index() {
                     d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
                   />
                 </svg>
-                <span>You&apos;re up and running</span>
+                <span>You&apos;re up and running :)</span>
               </h2>
               <a href="#commands"> What&apos;s next? </a>
             </div>
